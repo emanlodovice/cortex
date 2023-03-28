@@ -475,6 +475,16 @@ func (a *API) CreateRuleGroup(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, strings.Join(e, ", "), http.StatusBadRequest)
 		return
 	}
+	// There are currently issues with the yaml library where the Marshal method produces an invalid yaml file.
+	// Here we are testing if such an issue is applicable with the the provided rule group and reject the rule group
+	// if it is because rulers won't be able to load them.
+	resultingYaml, err := yaml.Marshal(rg)
+	err = yaml.Unmarshal(resultingYaml, &rulefmt.RuleGroup{})
+	if err != nil {
+		level.Error(logger).Log("msg", "unable to unmarshall the marshalled rule group payload", "err", err.Error())
+		http.Error(w, "unable to safely encode then decode rule group", http.StatusBadRequest)
+		return
+	}
 
 	if err := a.ruler.AssertMaxRulesPerRuleGroup(userID, len(rg.Rules)); err != nil {
 		level.Error(logger).Log("msg", "limit validation failure", "err", err.Error(), "user", userID)
