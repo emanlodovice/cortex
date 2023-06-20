@@ -224,6 +224,10 @@ type Limits interface {
 	// AlertmanagerMaxAlertsSizeBytes returns total max size of alerts that tenant can have active at the same time. 0 = no limit.
 	// Size of the alert is computed from alert labels, annotations and generator URL.
 	AlertmanagerMaxAlertsSizeBytes(tenant string) int
+
+	// AlertmanagerAPIConcurrency returns the total number of concurrent GET API requests before returning 503. If 0, alert manager
+	// use GOMAXPROCS or 8, whichever is larger, as the limit.
+	AlertmanagerAPIConcurrency(tenant string) int
 }
 
 // A MultitenantAlertmanager manages Alertmanager instances for multiple

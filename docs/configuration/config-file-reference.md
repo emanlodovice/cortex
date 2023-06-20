@@ -3074,6 +3074,10 @@ The `limits_config` configures default and per-tenant limits imposed by Cortex s
 # alerts will fail with a log message and metric increment. 0 = no limit.
 # CLI flag: -alertmanager.max-alerts-size-bytes
 [alertmanager_max_alerts_size_bytes: <int> | default = 0]
+
+# Maximum number of concurrent GET API requests before returning 503.
+# If 0, alert manager use GOMAXPROCS or 8, whichever is larger, as the limit.
+[alertmanager_api_concurrency: <int> | default = 0]
 ```
 
 ### `memberlist_config`

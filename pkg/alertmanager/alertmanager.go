@@ -246,8 +246,10 @@ func New(cfg *Config, reg *prometheus.Registry) (*Alertmanager, error) {
 	}()
 
 	var callback mem.AlertStoreCallback
+	var apiConcurrency int
 	if am.cfg.Limits != nil {
 		callback = newAlertsLimiter(am.cfg.UserID, am.cfg.Limits, reg)
+		apiConcurrency = am.cfg.Limits.AlertmanagerAPIConcurrency(am.cfg.UserID)
 	}
 
 	am.alerts, err = mem.NewAlerts(context.Background(), am.marker, 30*time.Minute, callback, am.logger, am.registry)
@@ -266,6 +268,7 @@ func New(cfg *Config, reg *prometheus.Registry) (*Alertmanager, error) {
 		GroupFunc: func(f1 func(*dispatch.Route) bool, f2 func(*types.Alert, time.Time) bool) (dispatch.AlertGroups, map[model.Fingerprint][]string) {
 			return am.dispatcher.Groups(f1, f2)
 		},
+		Concurrency: apiConcurrency,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create api: %v", err)
